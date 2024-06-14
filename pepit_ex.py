@@ -35,6 +35,8 @@ def wc_gradient_descent(L, mu, gamma, n, wrapper="cvxpy", solver=None, verbose=1
     pepit_verbose = max(verbose, 0)
     pepit_tau = problem.solve(wrapper=wrapper, solver=solver, verbose=pepit_verbose)
 
+    print(f"Dimension of the problem: {x0.eval().shape}")
+
     """ print(x0.eval())
     print(xs.eval())
     print(func(x0).eval())
@@ -67,6 +69,7 @@ def wc_gradient_descent(L, mu, gamma, n, wrapper="cvxpy", solver=None, verbose=1
 
 if __name__ == "__main__":
     L = 1
+    mu = 0.1
     pepit_tau, theoretical_tau = wc_gradient_descent(
-        L=L, mu=0, gamma=1 / L, n=1, wrapper="cvxpy", solver=None, verbose=1
+        L=L, mu=mu, gamma=1 / L, n=4, wrapper="cvxpy", solver=None, verbose=1
     )
