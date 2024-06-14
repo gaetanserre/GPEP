@@ -1,11 +1,9 @@
-from pkg.expression import Expression
-from pkg.variable import Variable
-from pkg.functions import SmoothStronglyConvexFunction
+from pkg.functions import SmoothConvexFunction
 from pkg import PEP
 import numpy as np
 
 gamma = 1
-f = SmoothStronglyConvexFunction(1, 0.1)
+f = SmoothConvexFunction(1)
 x0 = f.gen_initial_point()
 y0 = f.gen_initial_point()
 x = x0 - gamma * f.grad(x0)
