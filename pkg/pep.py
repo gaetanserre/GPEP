@@ -2,6 +2,7 @@
 # Created in 2024 by Gaëtan Serré
 #
 import numpy as np
+import lcmaes
 import cma
 
 
@@ -13,37 +14,24 @@ class PEP:
     def set_metric(self, metric):
         self.metric = metric
 
-    def solve(self, d):
-        nb_init = len(self.f.init_points)
-        nb_stat = len(self.f.stat_points)
+    def solve(self, d, backend="Python"):
+        nb_points = len(self.f.points)
+        nb_values = len(self.f.values)
+        nb_grads = len(self.f.grads)
 
         def F(x, verbose=False):
-            self.f.set_initial_points(x[: nb_init * d].reshape(nb_init, d))
-            thresh = nb_init * d
-            self.f.set_stationary_points(
-                x[thresh : thresh + nb_stat * d].reshape(nb_stat, d)
-            )
-            thresh += nb_stat * d
-            self.f.set_initial_grad(
-                x[thresh : thresh + nb_init * d].reshape(nb_init, d)
-            )
-            thresh += nb_init * d
-            self.f.set_stationary_grad(
-                x[thresh : thresh + nb_stat * d].reshape(nb_stat, d)
-            )
-            thresh += nb_stat * d
-            self.f.set_initial_values(x[thresh : thresh + nb_init])
-            thresh += nb_init
-            self.f.set_stationary_values(x[thresh:])
+            x = np.array(x)
+            self.f.set_points(x[: nb_points * d].reshape(nb_points, d))
+            thresh = nb_points * d
+            self.f.set_grads(x[thresh : thresh + nb_grads * d].reshape(nb_grads, d))
+            thresh += nb_grads * d
+            self.f.set_values(x[thresh:])
 
             obj = -self.metric.eval()
 
             constraints = self.f.create_interpolation_constraints()
             constraints.append(
-                (
-                    (self.f.init_points["x0"] - self.f.init_points["x1"]).norm() ** 2
-                    - 1
-                ).eval()
+                ((self.f.points["x0"] - self.f.points["x1"]).norm() ** 2 - 1).eval()
             )
             constraints = np.array(constraints)
             if verbose:
@@ -91,19 +79,38 @@ class PEP:
 
         print(F(x, verbose=True)) """
 
-        n_comp = nb_init * (2 * d + 1) + nb_stat * (2 * d + 1)
+        n_comp = nb_points * d + nb_grads * d + nb_values
+        x = [1] * n_comp
+        sigma = 50
+        max_iter = 10_000
 
-        options = {
-            # "bounds": [[0, 0, 0], [np.inf, np.inf, np.inf]],
-            "verbose": 1,
-            "maxiter": 5000,
-        }
+        if backend == "C++":
+            lambda_ = 10
+            seed = 0
+            p = lcmaes.make_simple_parameters(x, sigma, lambda_, seed)
+            p.set_max_iter(max_iter)
+            objfunc = lcmaes.fitfunc_pbf.from_callable(lambda x, n: F(x))
+            cmasols = lcmaes.pcmaes(objfunc, p)
+            bcand = cmasols.best_candidate()
+            bx = lcmaes.get_candidate_x(bcand)
 
-        res = cma.fmin(
-            F,
-            [0] * n_comp,
-            1,
-            options,
-        )
+            return bx, -F(bx, verbose=True)
+        elif backend == "Python":
+            n_comp = nb_points * d + nb_grads * d + nb_values
+            print(f"Number of components: {n_comp}")
+            options = {
+                "verbose": 1,
+                "maxiter": max_iter,
+                "tolx": 1e-8,
+            }
 
-        return res[0], -F(res[0], verbose=True)
+            res = cma.fmin(
+                F,
+                x,
+                sigma,
+                options,
+            )
+
+            return res[0], -F(res[0], verbose=True)
+        else:
+            raise ValueError(f"Unknown {backend} backend")
