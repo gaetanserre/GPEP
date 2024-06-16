@@ -88,7 +88,7 @@ class PEP:
         max_iter = 10_000
 
         if backend == "C++":
-            lambda_ = 10
+            lambda_ = 50
             seed = 0
             p = lcmaes.make_simple_parameters(x, sigma, lambda_, seed)
             p.set_max_iter(max_iter)
