@@ -95,3 +95,6 @@ class Expression:
     def norm(self, other=2):
         other = self.conv_to_const(other)
         return Expression(self.var, self.op_list + [Norm(other)])
+
+    def abs(self):
+        return Expression(self.var, self.op_list + [Abs()])

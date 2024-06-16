@@ -16,6 +16,7 @@ from .le import Le
 from .ge import Ge
 from .eq import Eq
 from .ne import Ne
+from .abs import Abs
 
 __all__ = [
     "Operator",
@@ -32,4 +33,5 @@ __all__ = [
     "Ge",
     "Eq",
     "Ne",
+    "Abs",
 ]
