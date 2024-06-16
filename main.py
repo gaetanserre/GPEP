@@ -1,17 +1,15 @@
 from pkg.functions import *
 from pkg import PEP
 
-gamma = 1
-f = SmoothStronglyConvexFunction(1, 0.5)
+gamma = 1 / 3
+f = SmoothStronglyConvexFunction(3, 1)
 x0 = f.gen_initial_point()
-y0 = f.gen_initial_point()
+xs = f.get_stationary_point()
 x = x0
-y = y0
-for _ in range(4):
+for _ in range(1):
     x = x - gamma * f.grad(x)
-    y = y - gamma * f.grad(y)
 pep = PEP(f)
-pep.set_metric((x - y).norm() ** 2)
+pep.set_metric((f(xs) - f(x)).abs())
 print(pep.solve(5, backend="Python"))
 """ y = f(xs)
 pep = PEP(f)

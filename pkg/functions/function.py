@@ -71,6 +71,12 @@ class Function:
     def gen_constraint(self, x1, x2, f1, f2, g1, g2):
         pass
 
+    def create_stationary_constraints(self):
+        constraints = []
+        for i in self.stat_ids:
+            constraints.append((self.grads[f"x{i}"].norm() ** 2).eval())
+        return constraints
+
     @staticmethod
     def merge_dicts(d1, d2):
         d = d1.copy()

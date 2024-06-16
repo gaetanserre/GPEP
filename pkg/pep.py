@@ -29,7 +29,10 @@ class PEP:
 
             obj = -self.metric.eval()
 
-            constraints = self.f.create_interpolation_constraints()
+            constraints = (
+                self.f.create_interpolation_constraints()
+                + self.f.create_stationary_constraints()
+            )
             constraints.append(
                 ((self.f.points["x0"] - self.f.points["x1"]).norm() ** 2 - 1).eval()
             )
