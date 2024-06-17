@@ -4,6 +4,7 @@
 
 from ..const import Const
 from ..operators import *
+from .constraint import Constraint
 
 
 class Expression:
@@ -70,19 +71,19 @@ class Expression:
 
     def __lt__(self, other):
         other = self.conv_to_const(other)
-        return Expression(self.var, self.op_list + [Lt(other)])
+        return Constraint(self, other, lambda x, y: x < y)
 
     def __gt__(self, other):
         other = self.conv_to_const(other)
-        return Expression(self.var, self.op_list + [Gt(other)])
+        return Constraint(other, self, lambda x, y: x < y)
 
     def __le__(self, other):
         other = self.conv_to_const(other)
-        return Expression(self.var, self.op_list + [Le(other)])
+        return Constraint(self, other, lambda x, y: x <= y)
 
     def __ge__(self, other):
         other = self.conv_to_const(other)
-        return Expression(self.var, self.op_list + [Ge(other)])
+        return Constraint(other, self, lambda x, y: x <= y)
 
     def __eq__(self, other):
         other = self.conv_to_const(other)
