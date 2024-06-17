@@ -10,13 +10,11 @@ from .div import Div
 from .pow import Pow
 from .dot import Dot
 from .norm import Norm
-from .lt import Lt
-from .gt import Gt
-from .le import Le
-from .ge import Ge
 from .eq import Eq
 from .ne import Ne
 from .abs import Abs
+from .min import Min
+from .max import Max
 
 __all__ = [
     "Operator",
@@ -27,11 +25,9 @@ __all__ = [
     "Pow",
     "Dot",
     "Norm",
-    "Lt",
-    "Gt",
-    "Le",
-    "Ge",
     "Eq",
     "Ne",
     "Abs",
+    "Min",
+    "Max",
 ]
