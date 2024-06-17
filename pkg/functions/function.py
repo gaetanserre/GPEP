@@ -68,9 +68,6 @@ class Function:
         for i, k in enumerate(self.grads.keys()):
             self.grads[k].var.set_value(values[i])
 
-    def gen_constraint(self, x1, x2, f1, f2, g1, g2):
-        pass
-
     def create_stationary_constraints(self):
         constraints = []
         for i in self.stat_ids:
@@ -83,20 +80,32 @@ class Function:
         d.update(d2)
         return d
 
+    def gen_1_point_constraint(self, x, f, g):
+        pass
+
+    def gen_2_points_constraint(self, x1, x2, f1, f2, g1, g2):
+        pass
+
     def create_interpolation_constraints(self):
         points = self.merge_dicts(self.points, self.expr)
         constraints = []
         for k1, x1 in points.items():
+            x1 = x1.eval()
+            f1 = self.values[k1].eval()
+            g1 = self.grads[k1].eval()
+            c1 = self.gen_1_point_constraint(x1, f1, g1)
+            if c1 is not None:
+                constraints.append(c1)
             for k2, x2 in points.items():
                 if k1 == k2:
                     continue
                 constraints.append(
-                    self.gen_constraint(
-                        x1.eval(),
+                    self.gen_2_points_constraint(
+                        x1,
                         x2.eval(),
-                        self.values[k1].eval(),
+                        f1,
                         self.values[k2].eval(),
-                        self.grads[k1].eval(),
+                        g1,
                         self.grads[k2].eval(),
                     )
                 )

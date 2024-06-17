@@ -12,7 +12,7 @@ class SmoothStronglyConvexFunction(Function):
         self.mu = mu
         super().__init__()
 
-    def gen_constraint(self, x1, x2, f1, f2, g1, g2):
+    def gen_2_points_constraint(self, x1, x2, f1, f2, g1, g2):
         return (
             f1
             + np.dot(g1, x2 - x1)
