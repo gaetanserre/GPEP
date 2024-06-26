@@ -25,7 +25,7 @@ class PEP:
         nb_values = len(self.f.values)
         nb_grads = len(self.f.grads)
 
-        def F(x, verbose=False):
+        def F(x, only_obj=False, verbose=False):
             x = np.array(x)
             self.f.set_points(x[: nb_points * d].reshape(nb_points, d))
             thresh = nb_points * d
@@ -42,10 +42,13 @@ class PEP:
             constraints.append(self.initial_condition.c_eval())
             constraints = np.array(constraints)
             if verbose:
-                print("Obj=", obj, "Constraints=", constraints)
+                print("Obj=", -obj, "Constraints=", constraints)
+
+            if only_obj:
+                return -obj
 
             lambda_ = np.zeros_like(constraints)
-            lambda_[constraints > 0] = 100_000 * max(1, np.abs(obj))
+            lambda_[constraints > 0] = 1_000_000 * max(1, np.abs(obj))
 
             return obj + np.sum(lambda_ * constraints)
 
@@ -97,6 +100,6 @@ class PEP:
                 options,
             )
 
-            return res[0], -F(res[0], verbose=True)
+            return res[0], F(res[0], only_obj=True, verbose=True)
         else:
             raise ValueError(f"Unknown {backend} backend")
