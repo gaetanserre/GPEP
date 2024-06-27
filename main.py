@@ -12,45 +12,26 @@ def cli():
     return parser.parse_args()
 
 
-def optimal_performance(L, n, d, tolx=1e-9, backend="Python", verbose=1):
+def optimal_performance(L, n, gamma, d, tolx=1e-9, backend="Python", verbose=1):
     f = SmoothConvexFunction(L=L)
 
     xs = f.get_stationary_point()
     fs = f(xs)
 
-    x0 = f.gen_initial_point()
-    f0 = f(x0)
+    xn = f.gen_initial_point()
+    fn, gn = f.oracle(xn)
+
+    xnp1 = xn - gamma * gn
+    fnp1 = f(xnp1)
+
+    init_lyapunov = n * (fn - fs) + (L / 2) * (xn - xs).norm() ** 2
+    final_lyapunov = (n + 1) * (fnp1 - fs) + (L / 2) * (xnp1 - xs).norm() ** 2
 
     pep = PEP(f)
-    pep.set_initial_condition((f0 - fs) <= 1)
+    # pep.set_initial_condition(gn.norm() <= 1e-15)
+    # pep.set_initial_condition(final_lyapunov <= 100)
 
-    theta_tilde = [1]
-    for i in range(n):
-        if i < n - 1:
-            theta_tilde.append((1 + sqrt(4 * theta_tilde[i] ** 2 + 1)) / 2)
-        else:
-            theta_tilde.append((1 + sqrt(8 * theta_tilde[i] ** 2 + 1)) / 2)
-    theta_tilde.reverse()
-
-    x = x0
-    y_new = x0
-    x_grad = f.grad(x)
-
-    for i in range(n):
-        y_old = y_new
-        y_new = x - 1 / L * x_grad
-        x = (
-            y_new
-            + (theta_tilde[i] - 1)
-            * (2 * theta_tilde[i + 1] - 1)
-            / theta_tilde[i]
-            / (2 * theta_tilde[i] - 1)
-            * (y_new - y_old)
-            + (2 * theta_tilde[i + 1] - 1) / (2 * theta_tilde[i] - 1) * (y_new - x)
-        )
-        x_grad = f.grad(x)
-
-    pep.set_metric(x_grad.norm() ** 2)
+    pep.set_metric(final_lyapunov - init_lyapunov)
     res = pep.solve(d, tolx, backend, verbose)
 
     points = {}
@@ -69,14 +50,15 @@ def optimal_performance(L, n, d, tolx=1e-9, backend="Python", verbose=1):
     print(f"Expr: {expr}")
     print(f"Values: {values}")
     print(f"Grads: {grads}")
-    print(f"(f0 - fs): {(f0 - fs).eval()}\n\n")
+    print(f"Lyapunov: {final_lyapunov.eval(), init_lyapunov.eval()}")
     return res
 
 
 if __name__ == "__main__":
     args = cli()
-    n = 2
-    L = 3
-    d = 5
-    res = optimal_performance(L, n, d, args.tolx, args.backend, args.verbose)
+    n = 10
+    L = 1
+    d = 1
+    gamma = 1 / L
+    res = optimal_performance(L, gamma, n, d, args.tolx, args.backend, args.verbose)
     print(f"Optimal performance estimation: {res[1]}.")

@@ -46,6 +46,13 @@ class Function:
             _, gv = self.add_expr_(v)
             return gv
 
+    def oracle(self, v):
+        if isinstance(v, Variable) and v.id in self.points:
+            return self.values[v.id], self.grads[v.id]
+        else:
+            fv, gv = self.add_expr_(v)
+            return fv, gv
+
     def gen_initial_point(self):
         v = Variable(f"x{self.point_counter}")
         self.add_point_(v)

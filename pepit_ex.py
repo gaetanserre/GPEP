@@ -1,10 +1,10 @@
-from math import sqrt
-
 from PEPit import PEP
 from PEPit.functions import SmoothConvexFunction
 
 
-def wc_optimized_gradient_for_gradient(L, n, wrapper="cvxpy", solver=None, verbose=1):
+def wc_gradient_descent_lyapunov_1(
+    L, gamma, n, wrapper="cvxpy", solver=None, verbose=1
+):
 
     # Instantiate PEP
     problem = PEP()
@@ -16,79 +16,62 @@ def wc_optimized_gradient_for_gradient(L, n, wrapper="cvxpy", solver=None, verbo
     xs = func.stationary_point()
     fs = func(xs)
 
-    # Then define x0 the starting point of the algorithm and its function value f(x_0)
-    x0 = problem.set_initial_point()
-    f0 = func(x0)
+    # Then define the starting point x0 of the algorithm as well as corresponding gradient and function value gn and fn
+    xn = problem.set_initial_point()
+    gn, fn = func.oracle(xn)
 
-    # Set the initial constraint that is f(x_0) - f(x_*)
-    problem.set_initial_condition(f0 - fs <= 1)
+    # Run the GD at iteration (n+1)
+    xnp1 = xn - gamma * gn
+    gnp1, fnp1 = func.oracle(xnp1)
 
-    # Compute scalar sequence of \tilde{theta}_t
-    theta_tilde = [
-        1
-    ]  # compute \tilde{theta}_{t} from \tilde{theta}_{t+1} (sequence in reverse order)
-    for i in range(n):
-        if i < n - 1:
-            theta_tilde.append((1 + sqrt(4 * theta_tilde[i] ** 2 + 1)) / 2)
-        else:
-            theta_tilde.append((1 + sqrt(8 * theta_tilde[i] ** 2 + 1)) / 2)
-    theta_tilde.reverse()
+    # Compute the Lyapunov function at iteration n and at iteration n+1
+    init_lyapunov = n * (fn - fs) + L / 2 * (xn - xs) ** 2
+    final_lyapunov = (n + 1) * (fnp1 - fs) + L / 2 * (xnp1 - xs) ** 2
 
-    print(theta_tilde)
-
-    # Run n steps of the optimized gradient method for gradient (OGM-G) method
-    x = x0
-    y_new = x0
-    x_grad = func.gradient(x)
-
-    for i in range(n):
-        y_old = y_new
-        y_new = x - 1 / L * x_grad
-        x = (
-            y_new
-            + (theta_tilde[i] - 1)
-            * (2 * theta_tilde[i + 1] - 1)
-            / theta_tilde[i]
-            / (2 * theta_tilde[i] - 1)
-            * (y_new - y_old)
-            + (2 * theta_tilde[i + 1] - 1) / (2 * theta_tilde[i] - 1) * (y_new - x)
-        )
-        x_grad = func.gradient(x)
-
-    # Set the performance metric to the gradient norm
-    problem.set_performance_metric(x_grad**2)
+    # Set the performance metric to the difference between the initial and the final Lyapunov
+    problem.set_performance_metric(final_lyapunov - init_lyapunov)
 
     # Solve the PEP
     pepit_verbose = max(verbose, 0)
     pepit_tau = problem.solve(wrapper=wrapper, solver=solver, verbose=pepit_verbose)
 
     # Compute theoretical guarantee (for comparison)
-    theoretical_tau = 2 * L / (theta_tilde[0] ** 2)
+    if gamma == 1 / L:
+        theoretical_tau = 0.0
+    else:
+        theoretical_tau = None
 
     # Print conclusion if required
     if verbose != -1:
         print(
-            "*** Example file: worst-case performance of optimized gradient method for gradient ***"
+            "*** Example file:"
+            " worst-case performance of gradient descent with fixed step-size for a given Lyapunov function***"
         )
-        print(
-            "\tPEP-it guarantee:\t ||f'(x_n)||^2 <= {:.6} (f(x_0) - f_*)".format(
-                pepit_tau
+        print("\tPEPit guarantee:\t" "V_(n+1) - V_(n) <= {:.6}".format(pepit_tau))
+        if gamma == 1 / L:
+            print(
+                "\tTheoretical guarantee:\t"
+                "V_(n+1) - V_(n) <= {:.6}".format(theoretical_tau)
             )
-        )
-        print(
-            "\tTheoretical guarantee:\t ||f'(x_n)||^2 <= {:.6} (f(x_0) - f_*)".format(
-                theoretical_tau
-            )
-        )
 
     # Return the worst-case guarantee of the evaluated method (and the reference theoretical value)
 
-    print(f"Dimension of the optimal value: {x0.eval().shape}")
-    print((f0 - fs).eval())
+    print(f"Dimension of the optimal solution: {xn.eval().shape}")
+    print(f"Lyapunov: {init_lyapunov.eval()} {final_lyapunov.eval()}")
+    print(f"xn: {xn.eval()}")
+    print(f"xs: {xs.eval()}")
+    print(f"fn: {fn.eval()}")
+    print(f"fs: {fs.eval()}")
+    print(f"gn: {gn.eval()}")
+    print(f"gs: {func.gradient(xs).eval()}")
+    print(f"xnp1: {xnp1.eval()}")
+    print(f"fnp1: {fnp1.eval()}")
+    print(f"gnp1: {gnp1.eval()}")
     return pepit_tau, theoretical_tau
 
 
 if __name__ == "__main__":
-    pepit_tau, theoretical_tau = wc_optimized_gradient_for_gradient(
-        L=3, n=2, wrapper="cvxpy", solver=None, verbose=1
+    L = 1
+    pepit_tau, theoretical_tau = wc_gradient_descent_lyapunov_1(
+        L=L, gamma=1 / L, n=10, wrapper="cvxpy", solver=None, verbose=1
     )

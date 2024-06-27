@@ -11,11 +11,11 @@ import cma
 class PEP:
     def __init__(self, f):
         self.f = f
-        self.initial_condition = None
+        self.initial_conditions = []
         self.metric = []
 
     def set_initial_condition(self, constraint):
-        self.initial_condition = constraint
+        self.initial_conditions.append(constraint)
 
     def set_metric(self, metric):
         self.metric.append(metric)
@@ -39,7 +39,8 @@ class PEP:
                 self.f.create_interpolation_constraints()
                 + self.f.create_stationary_constraints()
             )
-            constraints.append(self.initial_condition.c_eval())
+            for init_constraint in self.initial_conditions:
+                constraints.append(init_constraint.c_eval())
             constraints = np.array(constraints)
             if verbose:
                 print("Obj=", -obj, "Constraints=", constraints)
@@ -48,13 +49,19 @@ class PEP:
                 return -obj
 
             lambda_ = np.zeros_like(constraints)
-            lambda_[constraints > 0] = 1_000_000 * max(1, np.abs(obj))
+            lambda_[constraints > 0] = 1e15 * max(1, np.abs(obj))
 
             return obj + np.sum(lambda_ * constraints)
 
         n_comp = nb_points * d + nb_grads * d + nb_values
-        x = list(np.random.uniform(-100, 100, n_comp))
-        sigma = 100
+        l, u = -10, 10
+        x = list(np.random.uniform(l, u, n_comp))
+        sigma = 10
+
+        lo, up = [], []
+        for _ in range(n_comp):
+            lo.append(l)
+            up.append(u)
 
         if backend == "C++":
             lambda_ = 50
@@ -79,6 +86,7 @@ class PEP:
             n_comp = nb_points * d + nb_grads * d + nb_values
             options = {
                 "verbose": verbose,
+                "bounds": [lo, up],
                 "tolx": tolx,
             }
             res = cma.fmin(
@@ -87,6 +95,6 @@ class PEP:
                 sigma,
                 options,
             )
-            return res[0], F(res[0], only_obj=True)
+            return res[0], F(res[0], verbose=True, only_obj=True)
         else:
             raise ValueError(f"Unknown {backend} backend")
