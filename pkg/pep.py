@@ -20,7 +20,7 @@ class PEP:
     def set_metric(self, metric):
         self.metric.append(metric)
 
-    def solve(self, d, backend="Python"):
+    def solve(self, d, tolx=1e-9, backend="Python", verbose=1):
         nb_points = len(self.f.points)
         nb_values = len(self.f.values)
         nb_grads = len(self.f.grads)
@@ -55,12 +55,9 @@ class PEP:
         n_comp = nb_points * d + nb_grads * d + nb_values
         x = list(np.random.uniform(-100, 100, n_comp))
         sigma = 100
-        max_iter = 30_000
-        tolx = 1e-7
 
         if backend == "C++":
             lambda_ = 50
-            seed = 0
             cmasols = pcmaes(
                 to_fitfunc(F),
                 to_params(
@@ -68,38 +65,28 @@ class PEP:
                     lambda_,
                     sigma,  # all remaining parameters are optional
                     str_algo=b"vdcma",  # b=bytes, because unicode fails
-                    # max_iter=max_iter,
                     xtolerance=tolx,
                 ),
             )
-
-            """ p = lcmaes.make_simple_parameters(x, sigma, seed)
-            p.set_max_iter(max_iter * 2)
-            # p.set_xtolerance(1e-20)
-            objfunc = lcmaes.fitfunc_pbf.from_callable(lambda x, n: F(x))
-            cmasols = lcmaes.pcmaes(objfunc, p) """
             bcand = cmasols.best_candidate()
             bx = lcmaes.get_candidate_x(bcand)
 
-            print(cmasols.run_status())
+            print(f"Run status: {cmasols.run_status()}.")
 
             return bx, -F(bx, verbose=True)
+
         elif backend == "Python":
             n_comp = nb_points * d + nb_grads * d + nb_values
-            print(f"Number of components: {n_comp}")
             options = {
-                "verbose": 1,
-                # "maxiter": max_iter,
+                "verbose": verbose,
                 "tolx": tolx,
             }
-
             res = cma.fmin(
                 F,
                 x,
                 sigma,
                 options,
             )
-
-            return res[0], F(res[0], only_obj=True, verbose=True)
+            return res[0], F(res[0], only_obj=True)
         else:
             raise ValueError(f"Unknown {backend} backend")

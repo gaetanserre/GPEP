@@ -71,7 +71,7 @@ class Function:
     def create_stationary_constraints(self):
         constraints = []
         for i in self.stat_ids:
-            constraints.append((self.grads[f"x{i}"].norm() ** 2).eval())
+            constraints.append((self.grads[f"x{i}"].norm()).eval())
         return constraints
 
     @staticmethod

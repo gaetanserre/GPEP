@@ -90,5 +90,5 @@ def wc_optimized_gradient_for_gradient(L, n, wrapper="cvxpy", solver=None, verbo
 
 if __name__ == "__main__":
     pepit_tau, theoretical_tau = wc_optimized_gradient_for_gradient(
-        L=3, n=1, wrapper="cvxpy", solver=None, verbose=1
+        L=3, n=2, wrapper="cvxpy", solver=None, verbose=1
     )
