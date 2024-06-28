@@ -28,29 +28,9 @@ def optimal_performance(L, n, gamma, d, tolx=1e-9, backend="Python", verbose=1):
     final_lyapunov = (n + 1) * (fnp1 - fs) + (L / 2) * (xnp1 - xs).norm() ** 2
 
     pep = PEP(f)
-    # pep.set_initial_condition(gn.norm() <= 1e-15)
-    # pep.set_initial_condition(final_lyapunov <= 100)
-
     pep.set_metric(final_lyapunov - init_lyapunov)
     res = pep.solve(d, tolx, backend, verbose)
 
-    points = {}
-    for k, v in f.points.items():
-        points[k] = v.eval()
-    expr = {}
-    for k, v in f.expr.items():
-        expr[k] = v.eval()
-    values = {}
-    for k, v in f.values.items():
-        values[k] = v.eval()
-    grads = {}
-    for k, v in f.grads.items():
-        grads[k] = (v.norm()).eval()
-    print(f"\n\nPoints: {points}")
-    print(f"Expr: {expr}")
-    print(f"Values: {values}")
-    print(f"Grads: {grads}")
-    print(f"Lyapunov: {final_lyapunov.eval(), init_lyapunov.eval()}")
     return res
 
 
@@ -58,7 +38,7 @@ if __name__ == "__main__":
     args = cli()
     n = 10
     L = 1
-    d = 1
+    d = 4
     gamma = 1 / L
-    res = optimal_performance(L, gamma, n, d, args.tolx, args.backend, args.verbose)
+    res = optimal_performance(L, n, gamma, d, args.tolx, args.backend, args.verbose)
     print(f"Optimal performance estimation: {res[1]}.")

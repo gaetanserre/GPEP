@@ -57,16 +57,6 @@ def wc_gradient_descent_lyapunov_1(
     # Return the worst-case guarantee of the evaluated method (and the reference theoretical value)
 
     print(f"Dimension of the optimal solution: {xn.eval().shape}")
-    print(f"Lyapunov: {init_lyapunov.eval()} {final_lyapunov.eval()}")
-    print(f"xn: {xn.eval()}")
-    print(f"xs: {xs.eval()}")
-    print(f"fn: {fn.eval()}")
-    print(f"fs: {fs.eval()}")
-    print(f"gn: {gn.eval()}")
-    print(f"gs: {func.gradient(xs).eval()}")
-    print(f"xnp1: {xnp1.eval()}")
-    print(f"fnp1: {fnp1.eval()}")
-    print(f"gnp1: {gnp1.eval()}")
     return pepit_tau, theoretical_tau
 
 

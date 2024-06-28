@@ -33,12 +33,11 @@ class PEP:
             thresh += nb_grads * d
             self.f.set_values(x[thresh:])
 
+            self.f.set_stat_grads(d)
+
             obj = -Min(self.metric).eval()
 
-            constraints = (
-                self.f.create_interpolation_constraints()
-                + self.f.create_stationary_constraints()
-            )
+            constraints = self.f.create_interpolation_constraints()
             for init_constraint in self.initial_conditions:
                 constraints.append(init_constraint.c_eval())
             constraints = np.array(constraints)
@@ -86,7 +85,7 @@ class PEP:
             n_comp = nb_points * d + nb_grads * d + nb_values
             options = {
                 "verbose": verbose,
-                "bounds": [lo, up],
+                # "bounds": [lo, up],
                 "tolx": tolx,
             }
             res = cma.fmin(
@@ -98,3 +97,34 @@ class PEP:
             return res[0], F(res[0], verbose=True, only_obj=True)
         else:
             raise ValueError(f"Unknown {backend} backend")
+
+    def print_info(self):
+        f = self.f
+        points = {}
+        for k, v in f.points.items():
+            points[k] = v.eval()
+        expr = {}
+        for k, v in f.expr.items():
+            expr[k] = v.eval()
+        values = {}
+        for k, v in f.values.items():
+            values[k] = v.eval()
+        grads = {}
+        for k, v in f.grads.items():
+            grads[k] = v.eval()
+        grad_norms = {}
+        for k, v in f.grads.items():
+            grad_norms[k] = v.norm().eval()
+        stat_grads = {}
+        for k, v in f.stat_grads.items():
+            stat_grads[k] = v.eval()
+        stat_grads_norm = {}
+        for k, v in f.stat_grads.items():
+            stat_grads_norm[k] = v.norm().eval()
+        print(f"\n\nPoints: {points}")
+        print(f"Expr: {expr}")
+        print(f"Values: {values}")
+        print(f"Grads: {grads}")
+        print(f"Grad norms: {grad_norms}")
+        print(f"Stat grads: {stat_grads}")
+        print(f"Stat grad norms: {stat_grads_norm}")
