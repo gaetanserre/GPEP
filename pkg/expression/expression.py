@@ -5,6 +5,7 @@
 from ..const import Const
 from ..operators import *
 from .constraint import Constraint
+import numpy as np
 
 
 class Expression:
@@ -99,3 +100,47 @@ class Expression:
 
     def abs(self):
         return Expression(self.var, self.op_list + [Abs()])
+
+    def exp(self):
+        return Expression(self.var, self.op_list + [Exp()])
+
+    def log(self):
+        return Expression(self.var, self.op_list + [Log()])
+
+    def __hash__(self):
+        return hash((self.var, tuple(self.op_list)))
+
+
+class ExpressionList(Expression):
+    def __init__(self, e_list, aggr_cls):
+        super().__init__(aggr_cls(e_list))
+
+
+class Min:
+    def __init__(self, e_list):
+        self.e_list = e_list
+
+    def eval(self):
+        return np.min([e.eval() for e in self.e_list])
+
+    def __hash__(self):
+        return hash(tuple(self.e_list))
+
+
+class Max:
+    def __init__(self, e_list):
+        self.e_list = e_list
+
+    def eval(self):
+        return np.max([e.eval() for e in self.e_list])
+
+    def __hash__(self):
+        return hash(tuple(self.e_list))
+
+
+def emin(e_list):
+    return ExpressionList(e_list, Min)
+
+
+def emax(e_list):
+    return ExpressionList(e_list, Max)

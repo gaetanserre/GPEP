@@ -15,6 +15,7 @@ class Function:
 
         self.expr_counter = 0
         self.expr = {}
+        self.hash_to_id = {}
 
     def add_point_(self, v):
         self.points[v.id] = v
@@ -30,6 +31,7 @@ class Function:
         ge = Variable(f"g_e{self.expr_counter}").to_expr()
         self.values[f"e{self.expr_counter}"] = fe
         self.grads[f"e{self.expr_counter}"] = ge
+        self.hash_to_id[hash(e)] = f"e{self.expr_counter}"
         self.expr_counter += 1
         return fe, ge
 
@@ -37,8 +39,12 @@ class Function:
         if isinstance(v, Variable) and v.id in self.points:
             return self.values[v.id]
         else:
-            fv, _ = self.add_expr_(v)
-            return fv
+            if hash(v) in self.hash_to_id:
+                id = self.hash_to_id[hash(v)]
+                return self.values[id]
+            else:
+                fv, _ = self.add_expr_(v)
+                return fv
 
     def grad(self, v):
         if isinstance(v, Variable):
@@ -46,6 +52,10 @@ class Function:
                 return self.grads[v.id]
             elif v.id in self.stat_grads:
                 return self.stat_grads[v.id]
+        else:
+            if hash(v) in self.hash_to_id:
+                id = self.hash_to_id[hash(v)]
+                return self.grads[id]
             else:
                 _, gv = self.add_expr_(v)
                 return gv
@@ -58,8 +68,12 @@ class Function:
             elif v.id in self.stat_grads:
                 return fv, self.stat_grads[v.id]
         else:
-            fv, gv = self.add_expr_(v)
-            return fv, gv
+            if hash(v) in self.hash_to_id:
+                id = self.hash_to_id[hash(v)]
+                return self.values[id], self.grads[id]
+            else:
+                fv, gv = self.add_expr_(v)
+                return fv, gv
 
     def gen_initial_point(self):
         v = Variable(f"x{self.point_counter}")

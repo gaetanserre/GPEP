@@ -78,3 +78,6 @@ class Variable:
 
     def norm(self, other=2):
         return self.to_expr().norm(other)
+
+    def __hash__(self):
+        return hash(self.id)

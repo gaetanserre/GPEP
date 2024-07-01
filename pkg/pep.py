@@ -1,7 +1,7 @@
 #
 # Created in 2024 by Gaëtan Serré
 #
-from .operators import Min
+from .expression import emin
 import numpy as np
 from .lcmaes_interface import *
 import lcmaes
@@ -35,7 +35,7 @@ class PEP:
 
             self.f.set_stat_grads(d)
 
-            obj = -Min(self.metric).eval()
+            obj = -emin(self.metric).eval()
 
             constraints = self.f.create_interpolation_constraints()
             for init_constraint in self.initial_conditions:

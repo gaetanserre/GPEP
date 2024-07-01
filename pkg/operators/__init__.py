@@ -13,8 +13,8 @@ from .norm import Norm
 from .eq import Eq
 from .ne import Ne
 from .abs import Abs
-from .min import Min
-from .max import Max
+from .exp import Exp
+from .log import Log
 
 __all__ = [
     "Operator",
@@ -28,6 +28,6 @@ __all__ = [
     "Eq",
     "Ne",
     "Abs",
-    "Min",
-    "Max",
+    "Exp",
+    "Log",
 ]
