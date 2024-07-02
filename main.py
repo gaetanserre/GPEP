@@ -70,7 +70,7 @@ if __name__ == "__main__":
     L = 3
     mu = 0.1
     d = 4
-    sigma = 1e-50
+    sigma = 0.1
     gamma = 1 / L
     k = 1
     res = optimal_performance(

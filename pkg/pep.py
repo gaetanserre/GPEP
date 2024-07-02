@@ -3,8 +3,6 @@
 #
 from .expression import emin
 import numpy as np
-from .lcmaes_interface import *
-import lcmaes
 import cma
 
 
@@ -61,27 +59,7 @@ class PEP:
         for _ in range(n_comp):
             lo.append(l)
             up.append(u)
-
-        if backend == "C++":
-            lambda_ = 50
-            cmasols = pcmaes(
-                to_fitfunc(F),
-                to_params(
-                    x,
-                    lambda_,
-                    sigma,  # all remaining parameters are optional
-                    str_algo=b"vdcma",  # b=bytes, because unicode fails
-                    xtolerance=tolx,
-                ),
-            )
-            bcand = cmasols.best_candidate()
-            bx = lcmaes.get_candidate_x(bcand)
-
-            print(f"Run status: {cmasols.run_status()}.")
-
-            return bx, -F(bx, verbose=True)
-
-        elif backend == "Python":
+        if backend == "Python":
             n_comp = nb_points * d + nb_grads * d + nb_values
             options = {
                 "verbose": verbose,
