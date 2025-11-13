@@ -4,6 +4,8 @@
 from .expression import emin
 import numpy as np
 import cma
+from gob.optimizers import *
+from gob.benchmarks import create_bounds
 
 
 class PEP:
@@ -46,13 +48,18 @@ class PEP:
                 return -obj
 
             lambda_ = np.zeros_like(constraints)
-            lambda_[constraints > 0] = 1e15 * max(1, np.abs(obj))
+            lambda_[constraints > 0] = 1e5 * max(1, np.abs(obj))
 
             return obj + np.sum(lambda_ * constraints)
 
         n_comp = nb_points * d + nb_grads * d + nb_values
         l, u = -10, 10
-        x = list(np.random.uniform(l, u, n_comp))
+        bounds = create_bounds(n_comp, l, u)
+        opt = CMA_ES(bounds, n_eval=50_000)
+        res = opt.minimize(F)
+        return res[0], F(res[0], verbose=True, only_obj=True)
+
+        """ x = list(np.random.uniform(l, u, n_comp))
         sigma = 10
 
         lo, up = [], []
@@ -74,7 +81,7 @@ class PEP:
             )
             return res[0], F(res[0], verbose=True, only_obj=True)
         else:
-            raise ValueError(f"Unknown {backend} backend")
+            raise ValueError(f"Unknown {backend} backend") """
 
     def print_info(self):
         f = self.f
