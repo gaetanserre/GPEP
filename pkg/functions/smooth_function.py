@@ -3,19 +3,19 @@
 #
 
 from .function import Function
-import numpy as np
+from ..expression import Expression
+from ..const import Const
 
 
 class SmoothFunction(Function):
     def __init__(self, L):
-        self.L = L
-        super().__init__()
+        self.L = Expression(Const(L))
+        super().__init__("Smooth")
 
     def gen_2_points_constraint(self, x1, x2, f1, f2, g1, g2):
         return (
-            -f1
-            + f2
-            - self.L / 4 * np.linalg.norm(x1 - x2) ** 2
-            + 1 / 2 * np.dot(g1 + g2, x1 - x2)
-            + 1 / (4 * self.L) * np.linalg.norm(g1 - g2) ** 2
+            -self.L / 4 * (x1 - x2).norm() ** 2
+            + 1 / 2 * (g1 + g2).dot(x1 - x2)
+            + 1 / (4 * self.L) * (g1 - g2).norm() ** 2
+            <= f1 - f2
         )

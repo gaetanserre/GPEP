@@ -11,3 +11,6 @@ class Log(Operator):
 
     def eval(self, value):
         return np.log(value)
+
+    def str(self, expr):
+        return f"log({expr})"

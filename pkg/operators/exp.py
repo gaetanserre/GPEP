@@ -11,3 +11,6 @@ class Exp(Operator):
 
     def eval(self, value):
         return np.exp(value)
+
+    def str(self, expr):
+        return f"exp({expr})"

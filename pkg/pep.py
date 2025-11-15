@@ -20,7 +20,11 @@ class PEP:
     def set_metric(self, metric):
         self.metric.append(metric)
 
-    def solve(self, d, tolx=1e-9, backend="Python", verbose=1):
+    def solve(self, opt=None, verbose=1):
+        if verbose:
+            print("Solving PEP...")
+            print(self.f)
+
         nb_points = len(self.f.points)
         nb_values = len(self.f.values)
         nb_grads = len(self.f.grads)
@@ -37,10 +41,14 @@ class PEP:
 
             obj = -emin(self.metric).eval()
 
-            constraints = self.f.create_interpolation_constraints()
-            for init_constraint in self.initial_conditions:
-                constraints.append(init_constraint.c_eval())
-            constraints = np.array(constraints)
+            abstract_constraints = self.f.create_interpolation_constraints()
+            constraints = np.zeros(
+                len(abstract_constraints) + len(self.initial_conditions)
+            )
+            for i, constraint in enumerate(
+                abstract_constraints + self.initial_conditions
+            ):
+                constraints[i] = constraint.c_eval()
             if verbose:
                 print("Obj=", -obj, "Constraints=", constraints)
 
@@ -48,40 +56,44 @@ class PEP:
                 return -obj
 
             lambda_ = np.zeros_like(constraints)
-            lambda_[constraints > 0] = 1e5 * max(1, np.abs(obj))
+            lambda_[constraints > 0] = 1e15 * max(1, np.abs(obj))
 
             return obj + np.sum(lambda_ * constraints)
+
+        d = nb_points + nb_grads
 
         n_comp = nb_points * d + nb_grads * d + nb_values
         l, u = -10, 10
         bounds = create_bounds(n_comp, l, u)
-        opt = CMA_ES(bounds, n_eval=50_000)
+        if opt is None:
+            opt = CMA_ES(bounds, n_eval=200_000, sigma0=10)
+        else:
+            opt = opt(bounds)
         res = opt.minimize(F)
         return res[0], F(res[0], verbose=True, only_obj=True)
 
-        """ x = list(np.random.uniform(l, u, n_comp))
+        """ n_comp = nb_points * d + nb_grads * d + nb_values
+        l, u = -10, 10
+        x = list(np.random.uniform(l, u, n_comp))
         sigma = 10
 
         lo, up = [], []
         for _ in range(n_comp):
             lo.append(l)
             up.append(u)
-        if backend == "Python":
-            n_comp = nb_points * d + nb_grads * d + nb_values
-            options = {
-                "verbose": verbose,
-                # "bounds": [lo, up],
-                "tolx": tolx,
-            }
-            res = cma.fmin(
-                F,
-                x,
-                sigma,
-                options,
-            )
-            return res[0], F(res[0], verbose=True, only_obj=True)
-        else:
-            raise ValueError(f"Unknown {backend} backend") """
+
+        options = {
+            "verbose": verbose,
+            # "bounds": [lo, up],
+            "tolx": 1e-9,
+        }
+        res = cma.fmin(
+            F,
+            x,
+            sigma,
+            options,
+        )
+        return res[0], F(res[0], verbose=True, only_obj=True) """
 
     def print_info(self):
         f = self.f

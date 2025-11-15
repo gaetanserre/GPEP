@@ -11,3 +11,6 @@ class Abs(Operator):
 
     def eval(self, value):
         return np.abs(value)
+
+    def str(self, expr):
+        return f"|{expr}|"

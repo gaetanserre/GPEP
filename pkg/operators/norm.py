@@ -13,3 +13,6 @@ class Norm(Operator):
 
     def eval(self, value):
         return np.linalg.norm(value, self.expr.eval())
+
+    def str(self, expr):
+        return f"||{expr}||_{self.expr}"

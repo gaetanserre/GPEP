@@ -17,3 +17,9 @@ class Pow(Operator):
             return np.power(value, self.expr.eval())
         else:
             return np.power(self.expr.eval(), value)
+
+    def str(self, expr):
+        if not self.r:
+            return f"({expr} ^ {self.expr})"
+        else:
+            return f"({self.expr} ^ {expr})"

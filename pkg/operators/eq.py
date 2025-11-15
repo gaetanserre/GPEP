@@ -12,3 +12,6 @@ class Eq(Operator):
 
     def eval(self, value):
         return value == self.expr.eval()
+
+    def str(self, expr):
+        return f"({expr} == {self.expr})"

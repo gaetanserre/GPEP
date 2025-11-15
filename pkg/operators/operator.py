@@ -7,5 +7,8 @@ class Operator:
     def __init__(self):
         pass
 
-    def eval(self, expr):
+    def eval(self, value):
+        pass
+
+    def str(self, expr):
         pass

@@ -13,3 +13,6 @@ class Dot(Operator):
 
     def eval(self, value):
         return np.dot(value, self.expr.eval())
+
+    def str(self, expr):
+        return f"({expr} · {self.expr})"

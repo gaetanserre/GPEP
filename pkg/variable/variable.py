@@ -11,6 +11,8 @@ class Variable:
         self.value = value
 
     def eval(self):
+        if self.value is None:
+            raise ValueError(f"Variable '{self.id}' has no value assigned.")
         return self.value
 
     def set_value(self, value):
@@ -18,6 +20,9 @@ class Variable:
 
     def to_expr(self):
         return Expression(self)
+
+    def __str__(self):
+        return f"var({self.id})"
 
     def __add__(self, other):
         return self.to_expr().__add__(other)

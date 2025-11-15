@@ -6,7 +6,9 @@ import numpy as np
 
 
 class Function:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
+
         self.point_counter = 0
         self.points = {}
         self.values = {}
@@ -16,6 +18,43 @@ class Function:
         self.expr_counter = 0
         self.expr = {}
         self.hash_to_id = {}
+
+    def __str__(self):
+        n_stat_points = self.get_nb_stat_points()
+        n_initial_points = self.get_nb_init_points()
+
+        s = f"{self.name} Function:\n"
+        if n_initial_points == 0:
+            s_init_points = "\tNo initial point(s)\n"
+        else:
+            s_init_points = f"\t{n_initial_points} initial point(s):\n"
+        if n_stat_points == 0:
+            s_stats_points = "\tNo stationary point(s)\n"
+        else:
+            s_stats_points = f"\t{n_stat_points} stationary point(s):\n"
+        for v in self.points.values():
+            if v.id in self.grads:
+                s_init_points += (
+                    f" \t\t• {v}: Value {self.values[v.id]} - Grad {self.grads[v.id]}\n"
+                )
+            elif v.id in self.stat_grads:
+                s_stats_points += f" \t\t• {v}: Value {self.values[v.id]} - Zero grad {self.stat_grads[v.id]}\n"
+
+        constraints = self.create_interpolation_constraints()
+        if len(constraints) == 0:
+            s_constraints = "\tNo interpolation constraint(s)\n"
+        else:
+            s_constraints = f"\t{len(constraints)} interpolation constraint(s):\n"
+        for c in constraints:
+            s_constraints += f" \t\t• {c}\n"
+
+        return s + s_init_points + s_stats_points + s_constraints
+
+    def get_nb_stat_points(self):
+        return len(self.stat_grads)
+
+    def get_nb_init_points(self):
+        return len(self.points) - self.get_nb_stat_points()
 
     def add_point_(self, v):
         self.points[v.id] = v
@@ -67,13 +106,12 @@ class Function:
                 return fv, self.grads[v.id]
             elif v.id in self.stat_grads:
                 return fv, self.stat_grads[v.id]
+        elif hash(v) in self.hash_to_id:
+            id = self.hash_to_id[hash(v)]
+            return self.values[id], self.grads[id]
         else:
-            if hash(v) in self.hash_to_id:
-                id = self.hash_to_id[hash(v)]
-                return self.values[id], self.grads[id]
-            else:
-                fv, gv = self.add_expr_(v)
-                return fv, gv
+            fv, gv = self.add_expr_(v)
+            return fv, gv
 
     def gen_initial_point(self):
         v = Variable(f"x{self.point_counter}")
@@ -124,9 +162,9 @@ class Function:
         grads = self.merge_dicts(self.grads, self.stat_grads)
         constraints = []
         for k1, x1 in points.items():
-            x1 = x1.eval()
-            f1 = self.values[k1].eval()
-            g1 = grads[k1].eval()
+            # x1 = x1.eval()
+            f1 = self.values[k1]  # .eval()
+            g1 = grads[k1]  # .eval()
             c1 = self.gen_1_point_constraint(x1, f1, g1)
             if c1 is not None:
                 constraints.append(c1)
@@ -136,11 +174,11 @@ class Function:
                 constraints.append(
                     self.gen_2_points_constraint(
                         x1,
-                        x2.eval(),
+                        x2,  # .eval(),
                         f1,
-                        self.values[k2].eval(),
+                        self.values[k2],  # .eval(),
                         g1,
-                        grads[k2].eval(),
+                        grads[k2],  # .eval(),
                     )
                 )
         return constraints

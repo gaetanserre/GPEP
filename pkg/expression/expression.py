@@ -22,8 +22,17 @@ class Expression:
     @staticmethod
     def conv_to_const(c):
         if isinstance(c, (int, float)):
-            return Const(c)
+            return Expression(Const(c))
         return c
+
+    def __str__(self):
+        def rec_aux(op_list):
+            if op_list == []:
+                return str(self.var)
+            else:
+                return op_list[-1].str(rec_aux(op_list[:-1]))
+
+        return rec_aux(self.op_list)
 
     def __add__(self, other):
         other = self.conv_to_const(other)
@@ -72,19 +81,19 @@ class Expression:
 
     def __lt__(self, other):
         other = self.conv_to_const(other)
-        return Constraint(self, other, lambda x, y: x < y)
+        return Constraint(self, other, lambda x, y: x < y, "<")
 
     def __gt__(self, other):
         other = self.conv_to_const(other)
-        return Constraint(other, self, lambda x, y: x < y)
+        return Constraint(other, self, lambda x, y: x < y, "<")
 
     def __le__(self, other):
         other = self.conv_to_const(other)
-        return Constraint(self, other, lambda x, y: x <= y)
+        return Constraint(self, other, lambda x, y: x <= y, "<=")
 
     def __ge__(self, other):
         other = self.conv_to_const(other)
-        return Constraint(other, self, lambda x, y: x <= y)
+        return Constraint(other, self, lambda x, y: x <= y, "<=")
 
     def __eq__(self, other):
         other = self.conv_to_const(other)
