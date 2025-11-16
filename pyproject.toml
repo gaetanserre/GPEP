@@ -1,0 +1,26 @@
+[project]
+authors = [
+  { name = "Gaëtan Serré", email = "gaetan.serre@ens-paris-saclay.fr" },
+]
+maintainers = [
+  { name = "Gaëtan Serré", email = "gaetan.serre@ens-paris-saclay.fr" },
+]
+name = "GPEP"
+dependencies = ["gob", "numpy>=2.3.2"]
+description = "A package to handle Generalized Performance Estimation Problems."
+readme = "README.md"
+license = { file = "LICENSE" }
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = { attr = "GPEP.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["GPEP", "GPEP.*"]
+
+[project.urls]
+Repository = "https://github.com/gaetanserre/GPEP"
+
+[build-system]
+requires = ["setuptools", "toml"]
