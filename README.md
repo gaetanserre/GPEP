@@ -55,7 +55,7 @@ Evolution of the performance of two steps of gradient descent with step-size γ 
 
 - Several `Function` subclasses implement common models:
   - `SmoothFunction`, `SmoothConvexFunction`, `ConvexFunction`, `ConvexLipschitzFunction`, `SmoothStronglyConvexFunction`
-  - These generate the appropriate interpolation constraints (see [[Taylor et al., 2027]](https://arxiv.org/abs/1502.05666)).
+  - These generate the appropriate interpolation constraints (see [[Taylor et al., 2027]](https://arxiv.org/abs/1512.07516)).
 
 - `GPEP.GPEP` orchestrates assembling all interpolation constraints, initial conditions, and a performance metric. It then converts the abstract constraints into a finite-dimensional optimization problem over proxy variables and solves it numerically using a chosen global optimizer.
 

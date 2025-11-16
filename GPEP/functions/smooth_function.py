@@ -25,9 +25,9 @@ class SmoothFunction(Function):
     Reference
     ---------
     `[1] A. Taylor, J. Hendrickx, F. Glineur (2017).
-    Smooth strongly convex interpolation and exact worst-case performance of first-order methods.
-    Mathematical Programming, 161(1-2), 307-345.
-    <https://arxiv.org/pdf/1502.05666.pdf>`_
+    Exact worst-case performance of first-order methods for composite convex optimization.
+    SIAM Journal on Optimization, 27(3):1283–1313.
+    <https://arxiv.org/pdf/1512.07516.pdf>`_
     """
 
     def __init__(self, L):
