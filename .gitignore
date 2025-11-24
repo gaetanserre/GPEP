@@ -2,3 +2,4 @@ __pycache__
 outcmaes
 lcmaes.dat
 *.egg-info/
+build/
