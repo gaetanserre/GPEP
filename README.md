@@ -51,7 +51,7 @@ Evolution of the performance of two steps of gradient descent with step-size γ 
 - String rendering: `__str__` folds operator `str()` calls to obtain a human-readable symbolic form.
 
 ## Function and PEP roles
-- `GPEP.Function` manages sampled points, proxy variables for function values and gradients, and registers expressions encountered while simulating the algorithm. It exposes methods to produce interpolation constraints (one-point and two-point) that encode the functional assumptions being used (smoothness, convexity, Lipschitz gradient, etc.).
+- `GPEP.Function` manages sampled points, proxy variables for function values and gradients, and registers expressions encountered while simulating the algorithm. It exposes methods to produce interpolation constraints (one-point and two-point) that encode the functional assumptions being used (smoothness, convexity, Lipschitz, etc.).
 
 - Several `Function` subclasses implement common models:
   - `SmoothFunction`, `SmoothConvexFunction`, `ConvexFunction`, `ConvexLipschitzFunction`, `SmoothStronglyConvexFunction`
@@ -62,7 +62,7 @@ Evolution of the performance of two steps of gradient descent with step-size γ 
 ## Solvers
 - Default: CMA-ES via the [`GOB`](https://github.com/gaetanserre/GOB) package.
 - You may substitute other global optimizers supported by `gob.optimizers` or implement your own.
-- Because the problem is nonconvex in general (arbitrary expressions), the solver may return locally optimal solutions; treat results as numerical evidence rather than formal proofs.
+- Because the problem is nonconvex in general (arbitrary expressions), the solver may return locally optimal solutions; treat results as numerical evidence rather than formal proofs. As GPEP tries to maximize the minimum of a list of metrics, consider the returned objective value as a lower bound on the worst-case performance.
 
 ## Example usage
 Estimate the optimal performance of the [SBS](https://proceedings.mlr.press/v258/serre25a.html) method on smooth strongly convex functions.
